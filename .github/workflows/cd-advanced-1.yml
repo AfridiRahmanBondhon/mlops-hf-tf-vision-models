@@ -1,114 +1,152 @@
-name: CD / Advanced Part1
-
+name: cd-advanced-1.yml
 on:
-  workflow_dispatch:
-    inputs:
-      gcpProject:
-        description: 'GCP Project for Vertex AI Pipeline'
-        required: true
-        type: choice
-        options:
-          - gcp-ml-172005
-        default: 'gcp-ml-172005'
-      gcpRegion:
-        description: 'GCP Region for Vertex AI Pipeline'
-        required: true
-        type: choice
-        options:
-          - us-central1
-        default: 'us-central1'
-      fullResolutionData:
-        description: 'use the full resolution data, dataflow'
-        required: true
-        type: boolean
-        default: false
-    
+  push:
+    branches:
+      - main
+
 jobs:
   cd:
-    runs-on: ubuntu-latest
-  
     permissions:
-      contents: 'read'
-      id-token: 'write'
-
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.4.2
-    
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        
-    - name: 'Install required Python packages'
-      run: |
-        pip install -r requirements.txt
+      - name: Start Energy Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: start-measurement
+      - uses: actions/checkout@v2.4.2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install required Python packages
+        run: 'pip install -r requirements.txt
 
-    
-    - name: 'Replace GCP Project Strings'
-      id: prepare-step
-      run: |
-        gcp_key=`echo ${{ github.event.inputs.gcpProject }} | sed -e "s/-/_/g"`
-        echo "::set-output name=GCP_SECRET_KEY::$gcp_key"
-    
-    - name: 'Replace GCP Project in config.py'
-      working-directory: 'advanced_part1'
-      run: |
-        sed -i 's/gcp-ml-172005/${{ github.event.inputs.gcpProject }}/g' pipeline/configs.py
-    
-    - name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@v0'
-      env:
-        GCP_SECRET_KEY: ${{ steps.prepare-step.outputs.GCP_SECRET_KEY }}
-      with:
-        credentials_json: '${{ secrets[env.GCP_SECRET_KEY] }}'
-        
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v0'
+          '
+      - id: measurement-4
+        name: Record Measurement After Install required Python packages
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Install required Python packages
+          task: get-measurement
+      - id: prepare-step
+        name: Replace GCP Project Strings
+        run: 'gcp_key=`echo ${{ github.event.inputs.gcpProject }} | sed -e "s/-/_/g"`
 
-    - name: 'Set up docker auth in gcloud'
-      run: |
-        gcloud --quiet auth configure-docker
+          echo "::set-output name=GCP_SECRET_KEY::$gcp_key"
 
-    - name: 'Replace Access Token Placeholder'
-      working-directory: 'advanced_part1'
-      env: 
-        GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-        HF_ACCESS_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
-      run: |
-        envsubst '$GH_ACCESS_TOKEN, $HF_ACCESS_TOKEN' < pipeline/configs.py > pipeline/configs_tmp.py
-        mv pipeline/configs_tmp.py pipeline/configs.py
-        cat pipeline/configs.py
+          '
+      - id: measurement-6
+        name: Record Measurement After Replace GCP Project Strings
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Replace GCP Project Strings
+          task: get-measurement
+      - name: Replace GCP Project in config.py
+        run: 'sed -i ''s/gcp-ml-172005/${{ github.event.inputs.gcpProject }}/g'' pipeline/configs.py
 
-    - name: 'Create TFX Training Pipeline'
-      working-directory: 'advanced_part1'
-      env:
-        FULL_RES_DATA: ${{ github.event.inputs.fullResolutionData }}
-      run: |
-        FULL_RES_DATA=${{ env.FULL_RES_DATA }} \
-        tfx pipeline create \
-          --pipeline-path kubeflow_runner.py \
-          --engine vertex \
-          --build-image
+          '
+        working-directory: advanced_part1
+      - id: measurement-8
+        name: Record Measurement After Replace GCP Project in config.py
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Replace GCP Project in config.py
+          task: get-measurement
+      - env:
+          GCP_SECRET_KEY: ${{ steps.prepare-step.outputs.GCP_SECRET_KEY }}
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets[env.GCP_SECRET_KEY] }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+      - name: Set up docker auth in gcloud
+        run: 'gcloud --quiet auth configure-docker
 
-    - name: 'Compile TFX Training Pipeline'
-      working-directory: 'advanced_part1'
-      env:
-        FULL_RES_DATA: ${{ github.event.inputs.fullResolutionData }}      
-      run: |
-        FULL_RES_DATA=${{ env.FULL_RES_DATA }} \
-        tfx pipeline compile \
-          --pipeline-path kubeflow_runner.py \
-          --engine vertex
-          
-    - name: 'Run TFX Training Pipeline'
-      working-directory: 'advanced_part1'
-      env:
-        FULL_RES_DATA: ${{ github.event.inputs.fullResolutionData }}      
-      run: |
-          FULL_RES_DATA=${{ env.FULL_RES_DATA }} \
-          tfx run create \
-            --engine vertex \
-            --pipeline-name vit-e2e-pipeline-advanced-part1 \
-            --project ${{ github.event.inputs.gcpProject }} \
-            --region ${{ github.event.inputs.gcpRegion }}
-            
-    
+          '
+      - id: measurement-12
+        name: Record Measurement After Set up docker auth in gcloud
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Set up docker auth in gcloud
+          task: get-measurement
+      - env:
+          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          HF_ACCESS_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
+        name: Replace Access Token Placeholder
+        run: 'envsubst ''$GH_ACCESS_TOKEN, $HF_ACCESS_TOKEN'' < pipeline/configs.py
+          > pipeline/configs_tmp.py
+
+          mv pipeline/configs_tmp.py pipeline/configs.py
+
+          cat pipeline/configs.py
+
+          '
+        working-directory: advanced_part1
+      - id: measurement-14
+        name: Record Measurement After Replace Access Token Placeholder
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Replace Access Token Placeholder
+          task: get-measurement
+      - env:
+          FULL_RES_DATA: ${{ github.event.inputs.fullResolutionData }}
+        name: Create TFX Training Pipeline
+        run: "FULL_RES_DATA=${{ env.FULL_RES_DATA }} \\\ntfx pipeline create \\\n\
+          \  --pipeline-path kubeflow_runner.py \\\n  --engine vertex \\\n  --build-image\n"
+        working-directory: advanced_part1
+      - id: measurement-16
+        name: Record Measurement After Create TFX Training Pipeline
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Create TFX Training Pipeline
+          task: get-measurement
+      - env:
+          FULL_RES_DATA: ${{ github.event.inputs.fullResolutionData }}
+        name: Compile TFX Training Pipeline
+        run: "FULL_RES_DATA=${{ env.FULL_RES_DATA }} \\\ntfx pipeline compile \\\n\
+          \  --pipeline-path kubeflow_runner.py \\\n  --engine vertex\n  \n"
+        working-directory: advanced_part1
+      - id: measurement-18
+        name: Record Measurement After Compile TFX Training Pipeline
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Compile TFX Training Pipeline
+          task: get-measurement
+      - env:
+          FULL_RES_DATA: ${{ github.event.inputs.fullResolutionData }}
+        name: Run TFX Training Pipeline
+        run: "FULL_RES_DATA=${{ env.FULL_RES_DATA }} \\\ntfx run create \\\n  --engine\
+          \ vertex \\\n  --pipeline-name vit-e2e-pipeline-advanced-part1 \\\n  --project\
+          \ ${{ github.event.inputs.gcpProject }} \\\n  --region ${{ github.event.inputs.gcpRegion\
+          \ }}\n  \n"
+        working-directory: advanced_part1
+      - id: measurement-20
+        name: Record Measurement After Run TFX Training Pipeline
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Run TFX Training Pipeline
+          task: get-measurement
+      - id: display-measurement
+        name: Display Energy Results
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: display-results
+      - name: Save Total Energy Consumption Data
+        run: echo '${{ steps.final-measurement.outputs.data-total-json }}' > total_energy_consumption.json
+      - name: Upload Energy Consumption Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: total-energy-consumption
+          path: total_energy_consumption.json
