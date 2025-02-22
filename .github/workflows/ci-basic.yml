@@ -70,7 +70,7 @@ jobs:
       - name: Upload Energy Consumption Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: total-energy-consumption
+          name: total-energy-consumption-kubeflow-build
           path: total_energy_consumption.json
   local-build:
     runs-on: ubuntu-latest
@@ -137,7 +137,7 @@ jobs:
       - name: Upload Energy Consumption Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: total-energy-consumption
+          name: total-energy-consumption-local-build
           path: total_energy_consumption.json
   local-run:
     needs:
@@ -206,5 +206,5 @@ jobs:
       - name: Upload Energy Consumption Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: total-energy-consumption
+          name: total-energy-consumption-local-run
           path: total_energy_consumption.json
